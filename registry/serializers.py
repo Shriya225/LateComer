@@ -37,3 +37,9 @@ class LatecomerSerializer(serializers.ModelSerializer):
             "year": student.year,
             "course": student.course
         }
+
+class TotalListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=LateEntry
+        fields=["student","date","reason"]
+        depth=1
