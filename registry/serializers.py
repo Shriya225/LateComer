@@ -3,7 +3,7 @@ from .models import LateEntry, Student
 from datetime import date
 
 class LatecomerSerializer(serializers.ModelSerializer):
-    roll_no = serializers.CharField(write_only=True)  # Accept roll_no in request
+    roll_no = serializers.CharField(write_only=True)  
     total_count=serializers.SerializerMethodField()
     student_details=serializers.SerializerMethodField()
     class Meta:
@@ -39,7 +39,17 @@ class LatecomerSerializer(serializers.ModelSerializer):
         }
 
 class TotalListSerializer(serializers.ModelSerializer):
+    total_count=serializers.SerializerMethodField()
     class Meta:
         model=LateEntry
-        fields=["student","date","reason"]
+        fields=["student","reason","total_count"]
         depth=1
+    def get_total_count(self,obj):
+        return LateEntry.objects.filter(student=obj.student).count()
+    
+class StudentSerializer(serializers.ModelSerializer):
+    total_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Student
+        fields = ["roll_no", "name", "year", "branch", "course", "total_count"]
