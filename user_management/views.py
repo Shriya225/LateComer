@@ -20,19 +20,22 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             refresh_token = response.data.get('refresh')
             # Set refresh token in httponly cookie
             response.set_cookie(
-                key='refresh_token_user',
-                value=refresh_token,
-                httponly=True,
-                secure=False,               # Use True in production (HTTPS)
-                samesite='Lax',         
-                max_age=7*24*60*60,     
-                path='/',
-            )
+            key='refresh_token_user',
+            value=refresh_token,
+            httponly=True,
+            secure=False,     # okay for localhost
+            samesite='Lax',   # ✅ use Lax for local
+            path='/',
+            max_age=7*24*60*60
+        )
+
             del response.data['refresh']
 
         return response
     
 class CustomTokenRefreshView(APIView):
+    authentication_classes = []  # 🚀 no auth required
+    permission_classes = [] 
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get('refresh_token_user')
 
@@ -54,9 +57,22 @@ class CustomTokenRefreshView(APIView):
                 secure=False,  # enable in production
                 samesite='Lax',
                 max_age=7 * 24 * 60 * 60,
+            
                 path='/',
             )
             return response
 
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+class LogoutView(APIView):
+    permission_classes = []  # no auth required
+
+    def post(self, request):
+        response = Response({"detail": "Logged out"}, status=200)
+        # Delete refresh token cookie
+        response.delete_cookie(
+            key="refresh_token_user",
+            path="/",
+        )
+        return response
