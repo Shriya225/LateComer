@@ -23,8 +23,8 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             key='refresh_token_user',
             value=refresh_token,
             httponly=True,
-            secure=False,     # okay for localhost
-            samesite='Lax',   # ✅ use Lax for local
+            secure=True,     # okay for localhost
+            samesite='None',   # ✅ use Lax for local
             path='/',
             max_age=7*24*60*60
         )
@@ -54,8 +54,8 @@ class CustomTokenRefreshView(APIView):
                 key='refresh_token_user',
                 value=new_refresh,
                 httponly=True,
-                secure=False,  # enable in production
-                samesite='Lax',
+                secure=True,  # enable in production
+                samesite='None',
                 max_age=7 * 24 * 60 * 60,
             
                 path='/',
