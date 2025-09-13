@@ -74,7 +74,7 @@ class LogoutView(APIView):
         response.delete_cookie(
             key="refresh_token_user",
             path="/",
-             secure=True,      # must match original cookie
-    samesite='None',
+            samesite='None',  # matches original cookie
+            httponly=True,    # optional, but recommended
         )
         return response
