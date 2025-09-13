@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
+from rest_framework.decorators import api_view
 # Create your views here.
 class Demo(APIView):
     permission_classes = [AllowAny] 
@@ -65,16 +66,31 @@ class CustomTokenRefreshView(APIView):
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
-class LogoutView(APIView):
-    permission_classes = []  # no auth required
+# class LogoutView(APIView):
+#     permission_classes = []  # no auth required
 
-    def post(self, request):
-        response = Response({"detail": "Logged out"}, status=200)
-        # Delete refresh token cookie
-        response.delete_cookie(
-            key="refresh_token_user",
-            path="/",
-            samesite='None',  # matches original cookie
-            httponly=True,    # optional, but recommended
-        )
-        return response
+#     def post(self, request):
+#         response = Response({"detail": "Logged out"}, status=200)
+#         # Delete refresh token cookie
+#         response.delete_cookie(
+#             key="refresh_token_user",
+#             path="/",
+#             samesite='None',  # matches original cookie
+#             httponly=True,    # optional, but recommended
+#         )
+#         return response
+
+@api_view(["POST"])
+def logout(request):
+    refresh_token = request.COOKIES.get('refresh_token_user')
+    if not refresh_token:
+        return Response({"msg": "No refresh token cookie found"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+    except Exception as e:
+        return Response({"msg": f"Error blacklisting token: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    response = Response({"msg": "Successfully logged out."}, status=status.HTTP_200_OK)
+    response.delete_cookie('refresh_token_user', path='/')
+    return response
